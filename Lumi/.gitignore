@@ -1,10 +1,1 @@
-# Arquivos com variáveis de ambiente e credenciais
-.env
-.env.*
 !.env.example
-
-# Dependências
-node_modules/
-
-# Logs
-*.log

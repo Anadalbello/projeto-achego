@@ -1,0 +1,277 @@
+{
+  "name": "Mika - Envio automático do Meet.",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 1
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        0
+      ],
+      "id": "7422a6f5-1167-4a1f-94d6-eb1412c1a33a",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 4
+          },
+          "conditions": [
+            {
+              "id": "d518523e-091f-4f83-a2cd-bd67c732131d",
+              "leftValue": "={{ $json.start.dateTime }}",
+              "rightValue": "={{ $now.plus(5, 'minutes') }}",
+              "operator": {
+                "type": "dateTime",
+                "operation": "afterOrEquals"
+              }
+            },
+            {
+              "id": "c9e309f4-eeae-4d38-a55d-f06b3f33bb45",
+              "leftValue": "={{ $json.start.dateTime }}",
+              "rightValue": "={{ $now.plus(7, 'minutes') }}",
+              "operator": {
+                "type": "dateTime",
+                "operation": "before"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.4,
+      "position": [
+        448,
+        0
+      ],
+      "id": "539ca337-7dcf-4c45-a491-d57fe2c1fbcd",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://evolution:8080/message/sendText/mika",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "c06b4bfdbebf648a281ca1c65169bfafa5c4c17615e37b42d0509ddb9ffa4efd"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"number\": \"5511969085529\",\n  \"text\":\"Olá! Aqui está o link da sua sessão no Google Meet: {{ $json.hangoutLink }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        240,
+        176
+      ],
+      "id": "424033cc-4ad8-4e6f-8456-e6a19f9dc6ee",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "operation": "rowNotExists",
+        "dataTableId": {
+          "__rl": true,
+          "value": "lmEx7BL8kySX383o",
+          "mode": "list",
+          "cachedResultName": "mika_meet_enviados",
+          "cachedResultUrl": "/projects/ZADgiFhwOepMGQde/datatables/lmEx7BL8kySX383o"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "event_id",
+              "keyValue": "={{ $json.id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        32,
+        176
+      ],
+      "id": "4e8fdeb9-d88d-4eb7-89fa-10ca11c415a0",
+      "name": "If row does not exist",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "value": "lmEx7BL8kySX383o",
+          "mode": "list",
+          "cachedResultName": "mika_meet_enviados",
+          "cachedResultUrl": "/projects/ZADgiFhwOepMGQde/datatables/lmEx7BL8kySX383o"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "event_id": "={{ $json.id }}",
+            "enviado_em": "={{ $now.toISO() }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "event_id",
+              "displayName": "event_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "enviado_em",
+              "displayName": "enviado_em",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        400,
+        176
+      ],
+      "id": "52565ceb-488f-47ed-a9cb-0da306b7d7f2",
+      "name": "Insert row"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "calendar": {
+          "__rl": true,
+          "value": "38b553b918334346741595d7e49bb2b63c1e0314e666e7183b926704bddcb61a@group.calendar.google.com",
+          "mode": "list",
+          "cachedResultName": "Achego Atendimentos"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        224,
+        0
+      ],
+      "id": "d79364dc-2e24-4819-a9af-9c94a524b9bf",
+      "name": "Buscar Eventos",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "L1rWHmDltrwefmXf",
+          "name": "Google Calendar account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Buscar Eventos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "If row does not exist",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Insert row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If row does not exist": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar Eventos": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "0f6a624b-face-4909-ace4-97cc6e18f29d",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "ad069b5212133a5bbfd8c32daf2a989932370387a8043b17e98e0540a599f44d"
+  },
+  "nodeGroups": [],
+  "id": "BBDcyE9bq8rae70z",
+  "tags": []
+}
