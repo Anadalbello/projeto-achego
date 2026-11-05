@@ -1,5 +1,5 @@
 {
-  "name": "Mika - Envio automático do Meet.",
+  "name": "Mika - Envio automático do Meet",
   "nodes": [
     {
       "parameters": {
@@ -20,6 +20,35 @@
       ],
       "id": "7422a6f5-1167-4a1f-94d6-eb1412c1a33a",
       "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "calendar": {
+          "__rl": true,
+          "value": "38b553b918334346741595d7e49bb2b63c1e0314e666e7183b926704bddcb61a@group.calendar.google.com",
+          "mode": "list",
+          "cachedResultName": "Achego Atendimentos"
+        },
+        "options": {
+          "timeMin": "={{ $now.toISO() }}",
+          "timeMax": "={{ $now.plus(10, 'minutes').toISO() }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        224,
+        0
+      ],
+      "id": "d79364dc-2e24-4819-a9af-9c94a524b9bf",
+      "name": "Buscar Eventos",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "L1rWHmDltrwefmXf",
+          "name": "Google Calendar account"
+        }
+      }
     },
     {
       "parameters": {
@@ -65,34 +94,16 @@
     },
     {
       "parameters": {
-        "method": "POST",
-        "url": "http://evolution:8080/message/sendText/mika",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "apikey",
-              "value": "c06b4bfdbebf648a281ca1c65169bfafa5c4c17615e37b42d0509ddb9ffa4efd"
-            },
-            {
-              "name": "Content-Type",
-              "value": "application/json"
-            }
-          ]
-        },
-        "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "={\n  \"number\": \"5511969085529\",\n  \"text\":\"Olá! Aqui está o link da sua sessão no Google Meet: {{ $json.hangoutLink }}\"\n}",
-        "options": {}
+        "jsCode": "// Processa todos os itens vindos do nó anterior\nreturn $input.all().map(item => {\n  const description = item.json.description || '';\n  \n  // 1. Remove tags HTML (ex: <p>, <br>)\n  const cleanHtml = description.replace(/<[^>]*>/g, ' ');\n  \n  // 2. Extrai apenas a sequência numérica\n  const digitsOnly = cleanHtml.replace(/\\D/g, '');\n  \n  // 3. Busca padrão de número brasileiro (com ou sem 55 no início)\n  const match = digitsOnly.match(/(?:55)?(\\d{10,11})/);\n  \n  let whatsappNumber = '';\n  if (match) {\n    const numberOnly = match[1];\n    whatsappNumber = '55' + numberOnly;\n  } else {\n    // Número padrão caso não encontre na descrição\n    whatsappNumber = '5511969085529';\n  }\n  \n  return {\n    json: {\n      ...item.json,\n      whatsappNumber: whatsappNumber\n    }\n  };\n});"
       },
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.5,
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
       "position": [
-        240,
-        176
+        672,
+        0
       ],
-      "id": "424033cc-4ad8-4e6f-8456-e6a19f9dc6ee",
-      "name": "HTTP Request"
+      "id": "extract-whatsapp-code",
+      "name": "Extrair WhatsApp"
     },
     {
       "parameters": {
@@ -101,8 +112,7 @@
           "__rl": true,
           "value": "lmEx7BL8kySX383o",
           "mode": "list",
-          "cachedResultName": "mika_meet_enviados",
-          "cachedResultUrl": "/projects/ZADgiFhwOepMGQde/datatables/lmEx7BL8kySX383o"
+          "cachedResultName": "mika_meet_enviados"
         },
         "filters": {
           "conditions": [
@@ -116,12 +126,43 @@
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1.1,
       "position": [
-        32,
-        176
+        224,
+        220
       ],
       "id": "4e8fdeb9-d88d-4eb7-89fa-10ca11c415a0",
-      "name": "If row does not exist",
-      "alwaysOutputData": true
+      "name": "If row does not exist"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://evolution:8080/message/sendText/mika",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "SUA_CHAVE_API_AQUI"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"number\": \"{{ $json.whatsappNumber }}\",\n  \"text\":\"Olá! Aqui está o link da sua sessão no Google Meet: {{ $json.hangoutLink }}\"\n}",
+        "options": {},
+        "onError": "continueErrorOutput"
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        448,
+        220
+      ],
+      "id": "424033cc-4ad8-4e6f-8456-e6a19f9dc6ee",
+      "name": "HTTP Request"
     },
     {
       "parameters": {
@@ -129,81 +170,53 @@
           "__rl": true,
           "value": "lmEx7BL8kySX383o",
           "mode": "list",
-          "cachedResultName": "mika_meet_enviados",
-          "cachedResultUrl": "/projects/ZADgiFhwOepMGQde/datatables/lmEx7BL8kySX383o"
+          "cachedResultName": "mika_meet_enviados"
         },
         "columns": {
           "mappingMode": "defineBelow",
           "value": {
             "event_id": "={{ $json.id }}",
-            "enviado_em": "={{ $now.toISO() }}"
-          },
-          "matchingColumns": [],
-          "schema": [
-            {
-              "id": "event_id",
-              "displayName": "event_id",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "readOnly": false,
-              "removed": false
-            },
-            {
-              "id": "enviado_em",
-              "displayName": "enviado_em",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "dateTime",
-              "readOnly": false,
-              "removed": false
-            }
-          ],
-          "attemptToConvertTypes": false,
-          "convertFieldsToString": false
-        },
-        "options": {}
+            "enviado_em": "={{ $now.toISO() }}",
+            "status": "SUCESSO"
+          }
+        }
       },
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1.1,
       "position": [
-        400,
-        176
+        672,
+        140
       ],
       "id": "52565ceb-488f-47ed-a9cb-0da306b7d7f2",
-      "name": "Insert row"
+      "name": "Insert row - Sucesso"
     },
     {
       "parameters": {
-        "operation": "getAll",
-        "calendar": {
+        "dataTableId": {
           "__rl": true,
-          "value": "38b553b918334346741595d7e49bb2b63c1e0314e666e7183b926704bddcb61a@group.calendar.google.com",
+          "value": "lmEx7BL8kySX383o",
           "mode": "list",
-          "cachedResultName": "Achego Atendimentos"
+          "cachedResultName": "mika_meet_enviados"
         },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.googleCalendar",
-      "typeVersion": 1.3,
-      "position": [
-        224,
-        0
-      ],
-      "id": "d79364dc-2e24-4819-a9af-9c94a524b9bf",
-      "name": "Buscar Eventos",
-      "alwaysOutputData": true,
-      "credentials": {
-        "googleCalendarOAuth2Api": {
-          "id": "L1rWHmDltrwefmXf",
-          "name": "Google Calendar account"
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "event_id": "={{ $node['Extrair WhatsApp'].json.id }}",
+            "enviado_em": "={{ $now.toISO() }}",
+            "status": "FALHA"
+          }
         }
-      }
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        672,
+        300
+      ],
+      "id": "insert-row-falha",
+      "name": "Insert row - Falha"
     }
   ],
-  "pinData": {},
   "connections": {
     "Schedule Trigger": {
       "main": [
@@ -216,22 +229,33 @@
         ]
       ]
     },
-    "If": {
+    "Buscar Eventos": {
       "main": [
         [
           {
-            "node": "If row does not exist",
+            "node": "If",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "HTTP Request": {
+    "If": {
       "main": [
         [
           {
-            "node": "Insert row",
+            "node": "Extrair WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extrair WhatsApp": {
+      "main": [
+        [
+          {
+            "node": "If row does not exist",
             "type": "main",
             "index": 0
           }
@@ -249,11 +273,18 @@
         ]
       ]
     },
-    "Buscar Eventos": {
+    "HTTP Request": {
       "main": [
         [
           {
-            "node": "If",
+            "node": "Insert row - Sucesso",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Insert row - Falha",
             "type": "main",
             "index": 0
           }
@@ -265,13 +296,5 @@
   "settings": {
     "executionOrder": "v1",
     "binaryMode": "separate"
-  },
-  "versionId": "0f6a624b-face-4909-ace4-97cc6e18f29d",
-  "meta": {
-    "templateCredsSetupCompleted": true,
-    "instanceId": "ad069b5212133a5bbfd8c32daf2a989932370387a8043b17e98e0540a599f44d"
-  },
-  "nodeGroups": [],
-  "id": "BBDcyE9bq8rae70z",
-  "tags": []
+  }
 }

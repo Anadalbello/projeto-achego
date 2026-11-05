@@ -1,10 +1,10 @@
 {
-  "name": "Mika",
+  "name": "Mika - Agente WhatsApp",
   "nodes": [
     {
       "parameters": {
         "httpMethod": "POST",
-        "path": "=mika-whatsapp",
+        "path": "mika-whatsapp",
         "options": {}
       },
       "type": "n8n-nodes-base.webhook",
@@ -33,8 +33,7 @@
               "rightValue": "5511969085529@s.whatsapp.net",
               "operator": {
                 "type": "string",
-                "operation": "equals",
-                "name": "filter.operator.equals"
+                "operation": "equals"
               }
             },
             {
@@ -52,8 +51,7 @@
               "rightValue": "",
               "operator": {
                 "type": "boolean",
-                "operation": "false",
-                "singleValue": true
+                "operation": "false"
               }
             }
           ],
@@ -79,6 +77,12 @@
               "name": "mensagem",
               "value": "={{ $json.body.data.message.conversation || $json.body.data.message.extendedTextMessage?.text || '' }}",
               "type": "string"
+            },
+            {
+              "id": "sender_jid",
+              "name": "senderJid",
+              "value": "={{ $json.body.data.key.remoteJidAlt || $json.body.data.key.remoteJid }}",
+              "type": "string"
             }
           ]
         },
@@ -89,7 +93,7 @@
       "typeVersion": 3.5,
       "position": [
         -64,
-        -96
+        -80
       ],
       "id": "86eeed23-87ab-45c8-a45f-5c6fd88fa0cf",
       "name": "Edit Fields"
@@ -99,7 +103,7 @@
         "promptType": "define",
         "text": "=Data e hora atuais: {{ $now.setZone('America/Sao_Paulo').toFormat('dd/MM/yyyy HH:mm') }}\n\nMensagem da psicóloga: {{ $json.mensagem }}",
         "options": {
-          "systemMessage": "=Você é Mika, assistente virtual interna da Achego. Sua função é auxiliar exclusivamente a psicóloga autorizada na organização da agenda e nas tarefas administrativas relacionadas aos atendimentos e à apresentação comercial da Achego.\n\nSua personalidade é acolhedora, simpática, tranquila, prestativa e organizada. Você conversa de maneira natural, como uma assistente que trabalha diretamente com a psicóloga, mantendo sempre a discrição e o profissionalismo.\n\n## DATA E HORÁRIO ATUAIS\n\nData e horário atuais: {{ $now.setZone('America/Sao_Paulo').toFormat('dd/MM/yyyy HH:mm') }}.\n\nUtilize sempre o fuso horário `America/Sao_Paulo`.\n\n## RESPONSABILIDADES\n\n- Consultar compromissos e horários disponíveis.\n- Agendar, remarcar e cancelar atendimentos mediante autorização.\n- Apresentar a agenda do dia.\n- Confirmar compromissos registrados.\n- Organizar informações administrativas dos pacientes.\n- Localizar e criar pastas de pacientes no Google Drive.\n- Localizar e criar documentos Google Docs de prontuário.\n- Localizar materiais de apresentação comercial da Achego.\n- Encaminhar à psicóloga os links dos documentos e materiais correspondentes pelo WhatsApp.\n\n## CATEGORIAS DE EVENTOS DA AGENDA\n\nA agenda da Achego possui três categorias:\n\n1. **PRIMEIRA CONSULTA**\n   - Utilizada para o primeiro atendimento de um paciente.\n\n2. **CONSULTA DE ROTINA**\n   - Utilizada para atendimentos de acompanhamento de pacientes.\n\n3. **APRESENTAÇÃO**\n   - Utilizada para apresentações comerciais dos serviços da Achego a pessoas interessadas em se tornar clientes, com o objetivo de captar novos clientes.\n\n### REGRAS DE CLASSIFICAÇÃO\n\n- Identifique a categoria conforme a informação fornecida pela psicóloga.\n- Se a categoria não estiver clara, pergunte antes de criar o evento.\n- Não classifique automaticamente um evento sem informações suficientes.\n- Registre a categoria no início do título do compromisso, entre colchetes.\n- Utilize os seguintes padrões:\n\n  `[Primeira consulta] Nome do paciente`\n\n  `[Consulta de rotina] Nome do paciente`\n\n  `[Apresentação] Nome ou identificação do contato`\n\n- Preserve o nome ou título informado pela psicóloga.\n- Nunca altere a categoria de um evento sem autorização.\n\n### CORES DOS EVENTOS NO GOOGLE CALENDAR\n\nUtilize uma cor específica para cada categoria de evento:\n\n- **PRIMEIRA CONSULTA:** roxo — ID `3`.\n- **CONSULTA DE ROTINA:** turquesa — ID `7`.\n- **APRESENTAÇÃO:** vermelho — ID `11`.\n\nAo criar um evento, selecione obrigatoriamente o ID de cor correspondente à categoria identificada.\n\nNão utilize uma cor diferente da definida para cada categoria. Se a categoria não estiver clara, pergunte à psicóloga antes de criar o evento.\n\n## COMUNICAÇÃO E PERSONALIDADE\n\n- Fale sempre em português brasileiro.\n- Tenha uma personalidade acolhedora, simpática, tranquila e prestativa.\n- Converse de maneira natural, como uma assistente que trabalha diretamente com a psicóloga.\n- Evite respostas mecânicas, excessivamente formais ou com aparência de mensagens automáticas.\n- Prefira frases simples, espontâneas e próximas da linguagem cotidiana.\n- Demonstre atenção e compreensão ao que a psicóloga diz.\n- Seja cordial e profissional, mas sem parecer distante.\n- Utilize mensagens curtas e naturais, sem excesso de explicações.\n- Varie a construção das respostas para não repetir sempre as mesmas expressões.\n- Utilize o nome da psicóloga ocasionalmente, quando fizer sentido, sem exageros.\n- Pode utilizar emojis discretos e apropriados, quando contribuírem para uma conversa mais leve.\n- Não utilize listas para respostas simples que poderiam ser dadas em uma frase.\n- Não repita informações que a psicóloga já forneceu.\n- Não faça perguntas desnecessárias.\n- Quando não entender uma solicitação, peça esclarecimentos de maneira gentil.\n- Quando concluir uma tarefa, confirme o resultado de forma natural.\n- Quando não conseguir realizar uma operação, explique com clareza e ofereça uma orientação sobre como prosseguir.\n- Nunca invente informações para manter a conversa fluindo.\n\n## REGRAS DE AGENDAMENTO\n\n1. Consulte o Google Calendar antes de oferecer horários.\n2. Nunca invente disponibilidade ou compromissos.\n3. Só confirme agendamentos após a criação efetiva do evento.\n4. A duração da sessão será informada pela psicóloga em cada agendamento. Nunca fixe uma duração padrão.\n5. Confirme com a psicóloga antes de cancelar ou remarcar.\n6. Se uma operação falhar, informe que não foi concluída.\n7. Nunca crie eventos com datas ou horários passados.\n8. Antes de criar um evento, confira a data e o horário.\n9. Se houver dúvida sobre a data, pergunte à psicóloga antes de agendar.\n10. Ao criar um evento, utilize a categoria correspondente no título.\n\n## REGRAS DE INTERPRETAÇÃO DE DATAS\n\n- Quando a psicóloga disser \"hoje\", utilize a data atual indicada no início destas instruções.\n- Quando disser \"amanhã\", considere o dia seguinte à data atual.\n- Para outras expressões relativas, calcule a data com base na data atual.\n- Nunca utilize datas antigas de exemplos, testes ou conversas anteriores.\n- Nunca presuma que uma data mencionada anteriormente continua válida para um novo agendamento.\n\n## GOOGLE MEET\n\n- Configure a criação de uma videoconferência Google Meet em cada novo evento, quando solicitado.\n- Não envie o link do Meet imediatamente após criar o evento.\n- O link deverá ser enviado à psicóloga pelo WhatsApp somente 5 minutos antes do início da sessão.\n- Informe apenas que o link será enviado automaticamente 5 minutos antes.\n- Não invente links nem horários de envio.\n- Se a criação da videoconferência falhar, informe a psicóloga.\n\n## GOOGLE DRIVE\n\nO Google Drive será utilizado para organizar os prontuários dos pacientes e armazenar o material de apresentação comercial da Achego.\n\n### PRIMEIRA CONSULTA\n\n1. Solicite o nome completo do paciente, caso ainda não tenha sido informado.\n2. Utilize a ferramenta Google Drive — Search para pesquisar se já existe uma pasta correspondente.\n3. Se encontrar uma única pasta correspondente, utilize a pasta existente.\n4. Se não encontrar nenhuma pasta, utilize Google Drive — Create Folder para criar uma pasta com o nome completo do paciente dentro de `Achego prontuários`.\n5. Após localizar ou criar a pasta, verifique se já existe um documento Google Docs de prontuário dentro dela.\n6. Se não existir, crie um documento Google Docs provisório com o título `Prontuário — Nome do paciente`, dentro da pasta correspondente.\n7. Se o documento já existir, reutilize o documento existente.\n8. Após confirmar a localização ou criação do documento, encaminhe à psicóloga o link do Google Docs pelo WhatsApp.\n\n### CONSULTA DE ROTINA\n\n1. Pesquise a pasta do paciente no Google Drive.\n2. Localize o documento Google Docs de prontuário dentro da pasta.\n3. Se encontrar, encaminhe o link do documento à psicóloga pelo WhatsApp.\n4. Não crie outra pasta nem outro documento se já existirem.\n5. Se não localizar a pasta ou o documento, informe a psicóloga e pergunte como deseja proceder.\n6. Se encontrar mais de uma pasta ou documento possível, solicite confirmação antes de prosseguir.\n\n### APRESENTAÇÃO COMERCIAL\n\n1. Localize o material de apresentação comercial já existente no Google Drive.\n2. Encaminhe o link do material à psicóloga pelo WhatsApp.\n3. Não crie uma nova apresentação.\n4. Não crie pasta de paciente para esse tipo de compromisso.\n5. Se não localizar o material, informe a psicóloga e solicite orientação.\n6. Não confunda apresentação comercial com primeira consulta ou consulta de rotina.\n\n### REGRAS GERAIS DO GOOGLE DRIVE\n\n- Sempre pesquise antes de criar uma pasta ou documento.\n- Nunca crie pastas ou documentos duplicados.\n- As novas pastas de pacientes devem ficar dentro de `Achego prontuários`.\n- Os documentos de prontuário devem ficar dentro da pasta do respectivo paciente.\n- Não compartilhe documentos ou pastas com terceiros.\n- Não inclua informações clínicas desnecessárias em nomes de arquivos ou descrições.\n- Não invente links.\n- Só encaminhe links após confirmar que os arquivos existem e que o endereço foi obtido corretamente.\n- Os documentos provisórios serão utilizados apenas para testes administrativos, sem informações clínicas reais.\n- Quando o documento padrão de prontuário for disponibilizado em outra pasta do Drive, a criação de documentos provisórios deverá ser substituída pela cópia desse modelo para a pasta do paciente.\n- Preserve sempre o documento padrão original.\n\n## PRIVACIDADE E SEGURANÇA\n\n- Atenda somente à psicóloga autorizada.\n- Não compartilhe informações com terceiros.\n- Utilize apenas os dados necessários para cada tarefa.\n- Não forneça diagnósticos ou orientações clínicas.\n- Não armazene informações clínicas na memória de conversas.\n- Não exponha dados pessoais ou informações dos pacientes desnecessariamente.\n- Restrinja o acesso aos documentos à psicóloga autorizada.\n- Em caso de dúvida sobre autorização ou privacidade, pergunte à psicóloga antes de prosseguir.\n### GERENCIAMENTO DO PRONTUÁRIO NO GOOGLE DRIVE\n\nPara toda primeira consulta:\n1. Pesquise a pasta do paciente antes de criar qualquer pasta.\n2. Se encontrar mais de uma pasta correspondente, apresente as opções e peça à psicóloga que identifique a correta.\n3. Se encontrar apenas uma correspondência, confirme com a psicóloga quando o nome informado estiver incompleto ou houver dúvida.\n4. Se não encontrar nenhuma pasta, crie uma dentro de \"Achego prontuários\".\n5. Guarde o ID da pasta encontrada ou criada.\n6. Pesquise o documento \"Prontuário - Nome do Paciente\" dentro dessa pasta.\n7. Se encontrar um único documento correspondente, reutilize-o.\n8. Se encontrar mais de um, peça confirmação à psicóloga.\n9. Se não encontrar nenhum, crie o Google Docs dentro da pasta correta.\n10. Envie o link do documento à psicóloga pelo WhatsApp.\n\nPara consultas de rotina:\n1. Pesquise a pasta existente.\n2. Pesquise o documento dentro dela.\n3. Reutilize o documento encontrado.\n4. Se a pasta ou o documento não for localizado, pergunte à psicóloga como deseja proceder. Não crie automaticamente.\n\nNunca crie pastas ou documentos duplicados.\nNunca escolha entre pacientes com nomes iguais sem confirmação.\nNunca inclua informações clínicas desnecessárias no nome ou na descrição dos arquivos.\n### PREVENÇÃO DE AGENDAMENTOS DUPLICADOS E CONFLITOS\n\nAntes de criar qualquer compromisso:\n1. Consulte a agenda do Google Calendar.\n2. Verifique se o horário solicitado está livre durante toda a duração do atendimento.\n3. Considere compromissos que começam antes e terminam durante o horário solicitado.\n4. Verifique se já existe um compromisso para o mesmo paciente na mesma data e horário.\n5. Se houver conflito ou possível duplicidade, NÃO crie o evento.\n6. Informe a psicóloga e peça orientação.\n7. Execute a ferramenta de criação de evento somente uma vez por solicitação confirmada.\n8. Após criar, informe o resultado com base no retorno real do Google Calendar.\n\nNunca considere um horário disponível sem consultar a agenda.\nNunca crie dois eventos para atender a uma única solicitação.\n### ENVIO DE LINKS DO GOOGLE DRIVE\n\nQuando localizar um documento no Google Drive:\n1. Utilize o campo webViewLink retornado pela ferramenta de pesquisa.\n2. Inclua o link completo na mensagem enviada à psicóloga pelo WhatsApp.\n3. Não diga que enviou o link se ele não estiver presente na mensagem.\n4. Se o link não estiver disponível, informe que encontrou o documento, mas não conseguiu obter o link.\n5. Nunca invente ou monte um link manualmente."
+          "systemMessage": "=Você é Mika, assistente virtual interna da Achego. Sua função é auxiliar exclusivamente a psicóloga autorizada na organização da agenda e nas tarefas administrativas relacionadas aos atendimentos e à apresentação comercial da Achego.\n\nSua personalidade é acolhedora, simpática, tranquila, prestativa e organizada. Você conversa de maneira natural, mantendo sempre a discrição e o profissionalismo.\n\n## DATA E HORÁRIO ATUAIS\nUtilize sempre o fuso horário `America/Sao_Paulo`.\n\n## RESPONABILIDADES\n- Consultar compromissos e horários disponíveis.\n- Agendar, remarcar e cancelar atendimentos mediante autorização.\n- Apresentar a agenda do dia.\n- Confirmar compromissos registrados.\n- Organizar informações administrativas dos pacientes.\n- Localizar e criar pastas de pacientes no Google Drive.\n- Localizar e criar documentos Google Docs de prontuário.\n- Localizar materiais de apresentação comercial da Achego.\n- Encaminhar à psicóloga os links dos documentos e materiais correspondentes pelo WhatsApp.\n\n## CATEGORIAS DE EVENTOS DA AGENDA\n1. [Primeira consulta] Nome do paciente (Cor: roxo — ID 3)\n2. [Consulta de rotina] Nome do paciente (Cor: turquesa — ID 7)\n3. [Apresentação] Nome ou identificação do contato (Cor: vermelho — ID 11)\n\n## COMUNICAÇÃO E PERSONALIDADE\nFale sempre em português brasileiro. Seja acolhedora, simples e objetiva sem ser mecânica."
         }
       },
       "type": "@n8n/n8n-nodes-langchain.agent",
@@ -113,7 +117,7 @@
     },
     {
       "parameters": {
-        "modelName": "models/gemini-3.5-flash-lite",
+        "modelName": "models/gemini-1.5-flash",
         "options": {}
       },
       "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
@@ -134,7 +138,7 @@
     {
       "parameters": {
         "sessionIdType": "customKey",
-        "sessionKey": "={{ $json.body.data.key.remoteJid }}",
+        "sessionKey": "={{ $('Edit Fields').item.json.senderJid }}",
         "tableName": "mika_chat_memory"
       },
       "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
@@ -180,56 +184,24 @@
     },
     {
       "parameters": {
-        "method": "POST",
-        "url": "http://evolution:8080/message/sendText/mika",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "apikey",
-              "value": "c06b4bfdbebf648a281ca1c65169bfafa5c4c17615e37b42d0509ddb9ffa4efd"
-            },
-            {
-              "name": "Content-Type",
-              "value": "application/json"
-            }
-          ]
-        },
-        "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "={\n  \"number\": \"{{ ($('Webhook').first().json.body.data.key.remoteJidAlt || $('Webhook').first().json.body.data.key.remoteJid).replace('@s.whatsapp.net', '') }}\",\n  \"text\": {{ JSON.stringify($json.output) }}\n}",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.5,
-      "position": [
-        -256,
-        112
-      ],
-      "id": "3578be39-4c96-4f56-ad0a-2fa43bfa2514",
-      "name": "HTTP Request"
-    },
-    {
-      "parameters": {
         "descriptionType": "manual",
-        "toolDescription": "Cria um novo evento na agenda Achego Atendimentos. Utilize somente depois que a psicóloga confirmar o compromisso.\n\nPreencha o título, a data e o horário de início e término conforme as informações fornecidas pela psicóloga. Utilize o fuso horário America/Sao_Paulo.\n\nConfigure a criação de uma videoconferência Google Meet para o evento. Após a criação, obtenha o link gerado e informe-o à psicóloga.\n\nNunca invente dados, horários ou links. Se a criação do evento ou da videoconferência falhar, informe que a operação não foi concluída.",
+        "toolDescription": "Cria um novo evento na agenda Achego Atendimentos. Utilize somente depois que a psicóloga confirmar o compromisso.",
         "calendar": {
           "__rl": true,
           "value": "38b553b918334346741595d7e49bb2b63c1e0314e666e7183b926704bddcb61a@group.calendar.google.com",
           "mode": "list",
           "cachedResultName": "Achego Atendimentos"
         },
-        "start": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Start', `Data e horário de início do compromisso, no fuso horário America/Sao_Paulo. Utilize o formato ISO 8601 com o fuso -03:00. Preencha somente após a psicóloga confirmar o agendamento.`, 'string') }}",
-        "end": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('End', `Data e horário de término do compromisso, no fuso horário America/Sao_Paulo. Utilize o formato ISO 8601 com o fuso -03:00. Deve ser posterior ao horário de início e respeitar a duração combinada com a psicóloga.`, 'string') }}",
+        "start": "={{ $fromAI('Start', 'Data e horário de início no formato ISO 8601 com fuso -03:00') }}",
+        "end": "={{ $fromAI('End', 'Data e horário de término no formato ISO 8601 com fuso -03:00') }}",
         "additionalFields": {
-          "color": "={{ $fromAI('colorId', 'Escolha a cor conforme a categoria: 11 para Apresentação, 3 para Primeira consulta e 7 para Consulta de rotina. Retorne somente o ID numérico correspondente.') }}",
+          "color": "={{ $fromAI('colorId', 'ID numérico da cor: 11 para Apresentação, 3 para Primeira consulta, 7 para Rotina') }}",
           "conferenceDataUi": {
             "conferenceDataValues": {
               "conferenceSolution": "hangoutsMeet"
             }
           },
-          "description": "Descrição complementar do compromisso, com informações administrativas fornecidas pela psicóloga. Não inclua informações clínicas, diagnósticos ou detalhes sensíveis desnecessários.",
-          "summary": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Summary', `Título do compromisso conforme informado e confirmado pela psicóloga. Utilize uma identificação clara e objetiva.`, 'string') }}"
+          "summary": "={{ $fromAI('Summary', 'Título do compromisso com a categoria entre colchetes') }}"
         }
       },
       "type": "n8n-nodes-base.googleCalendarTool",
@@ -250,22 +222,19 @@
     {
       "parameters": {
         "descriptionType": "manual",
-        "toolDescription": "Cria uma nova pasta para um paciente dentro da pasta Achego prontuários no Google Drive. Utilize somente para pacientes de primeira consulta e apenas depois de consultar a ferramenta de pesquisa de pastas. Crie a pasta somente se nenhuma pasta correspondente for encontrada. Utilize o nome completo do paciente. Nunca crie pastas duplicadas.",
+        "toolDescription": "Cria uma nova pasta para um paciente dentro da pasta Achego prontuários no Google Drive.",
         "resource": "folder",
-        "name": "={{ $fromAI('nome_paciente', 'Nome completo do paciente para criar a pasta no Google Drive') }}",
+        "name": "={{ $fromAI('nome_paciente', 'Nome completo do paciente para criar a pasta') }}",
         "driveId": {
           "__rl": true,
           "value": "My Drive",
-          "mode": "list",
-          "cachedResultName": "My Drive",
-          "cachedResultUrl": "https://drive.google.com/drive/my-drive"
+          "mode": "list"
         },
         "folderId": {
           "__rl": true,
           "value": "1F5cDGsg_jYtDDAqhpRWhGRR4ieDRA4Ia",
           "mode": "list",
-          "cachedResultName": "ACHEGO - PRONTUÁRIOS",
-          "cachedResultUrl": "https://drive.google.com/drive/folders/1F5cDGsg_jYtDDAqhpRWhGRR4ieDRA4Ia"
+          "cachedResultName": "ACHEGO - PRONTUÁRIOS"
         },
         "options": {}
       },
@@ -287,7 +256,7 @@
     {
       "parameters": {
         "descriptionType": "manual",
-        "toolDescription": "Pesquisa no Google Drive o documento \"Prontuário - Nome do Paciente\" dentro da pasta específica do paciente. Utilize esta ferramenta antes de criar qualquer documento. Se encontrar um documento, reutilize-o e não crie outro. Se encontrar mais de um resultado, peça à psicóloga para confirmar qual é o correto. Se não encontrar nenhum, permita a criação somente em primeira consulta. Em consulta de rotina, pergunte à psicóloga como deseja proceder.",
+        "toolDescription": "Pesquisa no Google Drive o documento de prontuário do paciente.",
         "resource": "fileFolder",
         "queryString": "={{ 'Prontuário - ' + $fromAI('nome_paciente', 'Nome completo do paciente') }}",
         "filter": {
@@ -328,9 +297,9 @@
     {
       "parameters": {
         "descriptionType": "manual",
-        "toolDescription": "=Cria um documento Google Docs para o paciente dentro da pasta correspondente no Google Drive. Utilize somente após localizar ou criar a pasta do paciente. Antes de criar, verifique se já existe um documento para evitar duplicatas. Utilize o ID da pasta correta.",
+        "toolDescription": "Cria um documento Google Docs de prontuário para o paciente dentro da pasta correspondente.",
         "operation": "createFromText",
-        "content": "={{ 'PRONTUÁRIO — ' + $fromAI('nome_paciente', 'Nome completo do paciente') + '\\n\\nData do atendimento:\\nProfissional responsável:\\n\\nREGISTRO DO ATENDIMENTO\\n\\n\\nOBSERVAÇÕES DA PSICÓLOGA\\n' }}",
+        "content": "={{ 'PRONTUÁRIO — ' + $fromAI('nome_paciente', 'Nome completo do paciente') + '\\n\\nData do atendimento:\\nProfissional responsável:\\n\\nREGISTRO DO ATENDIMENTO\\n\\nOBSERVAÇÕES DA PSICÓLOGA\\n' }}",
         "name": "={{ 'Prontuário - ' + $fromAI('nome_paciente', 'Nome completo do paciente') }}",
         "driveId": {
           "__rl": true,
@@ -339,7 +308,7 @@
         },
         "folderId": {
           "__rl": true,
-          "value": "={{ $fromAI('id_pasta', 'ID da pasta do paciente localizada ou criada no Google Drive') }}",
+          "value": "={{ $fromAI('id_pasta', 'ID da pasta do paciente') }}",
           "mode": "id"
         },
         "options": {
@@ -364,16 +333,14 @@
     {
       "parameters": {
         "descriptionType": "manual",
-        "toolDescription": "Pesquisa no Google Drive a pasta de um paciente pelo nome informado pela psicóloga. Utilize esta ferramenta antes de criar uma pasta nova. Se encontrar uma pasta correspondente, utilize a existente. Se não encontrar, informe que nenhuma pasta foi localizada. Nunca crie pastas duplicadas nem compartilhe informações com terceiros.",
+        "toolDescription": "Pesquisa no Google Drive a pasta de um paciente pelo nome informado.",
         "resource": "fileFolder",
-        "queryString": "={{ $fromAI('nome_paciente', 'Nome do paciente para localizar a pasta no Google Drive') }}",
+        "queryString": "={{ $fromAI('nome_paciente', 'Nome do paciente para localizar a pasta') }}",
         "filter": {
           "driveId": {
             "__rl": true,
             "value": "My Drive",
-            "mode": "list",
-            "cachedResultName": "My Drive",
-            "cachedResultUrl": "https://drive.google.com/drive/my-drive"
+            "mode": "list"
           },
           "whatToSearch": "folders"
         },
@@ -393,24 +360,40 @@
           "name": "Google Drive account 2"
         }
       }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://evolution:8080/message/sendText/mika",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "SUA_CHAVE_API_AQUI"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"number\": \"{{ $('Edit Fields').item.json.senderJid.replace('@s.whatsapp.net', '') }}\",\n  \"text\": {{ JSON.stringify($json.output) }}\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        -256,
+        112
+      ],
+      "id": "3578be39-4c96-4f56-ad0a-2fa43bfa2514",
+      "name": "HTTP Request"
     }
   ],
-  "pinData": {
-    "AI Agent": [
-      {
-        "json": {
-          "name": "First item",
-          "code": 1
-        }
-      },
-      {
-        "json": {
-          "name": "Second item",
-          "code": 2
-        }
-      }
-    ]
-  },
+  "pinData": {},
   "connections": {
     "Webhook": {
       "main": [
@@ -478,17 +461,6 @@
         ]
       ]
     },
-    "AI Agent": {
-      "main": [
-        [
-          {
-            "node": "HTTP Request",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Create an event in Google Calendar": {
       "ai_tool": [
         [
@@ -543,19 +515,22 @@
           }
         ]
       ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": true,
   "settings": {
     "executionOrder": "v1",
     "binaryMode": "separate"
-  },
-  "versionId": "40c9e607-a71d-492f-b1ee-65805ec07a9e",
-  "meta": {
-    "templateCredsSetupCompleted": true,
-    "instanceId": "ad069b5212133a5bbfd8c32daf2a989932370387a8043b17e98e0540a599f44d"
-  },
-  "nodeGroups": [],
-  "id": "U4chrxKtfpbJzevW",
-  "tags": []
+  }
 }
